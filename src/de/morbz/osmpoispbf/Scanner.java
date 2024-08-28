@@ -57,6 +57,7 @@ public class Scanner {
 	private static String[] outputTags = { "name" };
 	private static long lastMillis = 0;
 	private static char separator = '|';
+	private static boolean skipRequiredTags = false;
 
 	public static void main(String[] args) {
 		System.out.println("OsmPoisPbf " + VERSION + " started");
@@ -94,7 +95,7 @@ public class Scanner {
 		options.addOption("d", "decimals", true, "Number of decimal places of coordinates [7]");
 		options.addOption("s", "separator", true, "Separator character for CSV [|]");
 		options.addOption("v", "verbose", false, "Print all found POIs");
-		options.addOption("h", "help", false, "Print this help");
+		options.addOption("srt", "skipRequiredTags", false, "Skip Required Tags. Sometimes there are records without required tags, but we still need them ");
 
 		// Parse parameters
 		CommandLine line = null;
@@ -146,6 +147,10 @@ public class Scanner {
 		}
 		if(line.hasOption("relations")) {
 			parseRelations = true;
+		}
+
+		if(line.hasOption("skipRequiredTags")){
+			skipRequiredTags = true;
 		}
 
 		// Unclosed ways allowed?
@@ -269,10 +274,12 @@ public class Scanner {
 					return false;
 				}
 
-				// Check required tags
-				for(String tag : requiredTags) {
-					if(!tags.hasKey(tag)) {
-						return false;
+				if(!skipRequiredTags){
+					// Check required tags
+					for(String tag : requiredTags) {
+						if(!tags.hasKey(tag)) {
+							return false;
+						}
 					}
 				}
 
